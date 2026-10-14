@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Factura')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar('facturas')}"></nav>
+
+<main class="container pb-5" style="max-width: 960px;">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+        <div>
+            <h1 class="h3 mb-1" th:text="${factura.comercio}">Comercio</h1>
+            <div class="text-muted small">
+                <span th:text="${#temporals.format(factura.fecha, 'dd/MM/yyyy')}">fecha</span> ·
+                <span th:text="${factura.categoriaNombre}">Categoría</span> ·
+                <span th:text="${factura.metodoNombre}">Método</span>
+            </div>
+        </div>
+        <div class="text-end">
+            <div class="small text-muted">Total</div>
+            <div class="h3 mb-0" th:text="'$' + ${#numbers.formatDecimal(factura.total, 1, 'POINT', 0, 'COMMA')}">$0</div>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/layout :: mensajes}"></div>
+
+    <div class="card card-mw mb-4">
+        <div class="table-responsive">
+            <table class="table align-middle mb-0">
+                <thead>
+                <tr><th>Producto</th><th class="text-end">Cantidad</th><th class="text-end">Precio unitario</th>
+                    <th class="text-end">Subtotal</th><th></th></tr>
+                </thead>
+                <tbody>
+                <tr th:each="d : ${detalles}">
+                    <td th:text="${d.productoNombre}">Producto</td>
+                    <td class="text-end" th:text="${d.cantidad.stripTrailingZeros().toPlainString()}">1</td>
+                    <td class="text-end text-nowrap"
+                        th:text="'$' + ${#numbers.formatDecimal(d.precioUnitario, 1, 'POINT', 0, 'COMMA')}">$0</td>
+                    <td class="text-end text-nowrap"
+                        th:text="'$' + ${#numbers.formatDecimal(d.subtotal, 1, 'POINT', 0, 'COMMA')}">$0</td>
+                    <td class="text-end">
+                        <form method="post"
+                              th:action="@{/facturas/{id}/detalle/{d}/eliminar(id=${factura.id}, d=${d.id})}">
+                            <button type="submit" class="btn btn-sm btn-outline-danger" aria-label="Quitar">Quitar</button>
+                        </form>
+                    </td>
+                </tr>
+                <tr th:if="${#lists.isEmpty(detalles)}">
+                    <td colspan="5" class="text-center text-muted py-4">Esta factura aún no tiene productos.</td>
+                </tr>
+                </tbody>
+                <tfoot th:unless="${#lists.isEmpty(detalles)}">
+                <tr>
+                    <td colspan="3" class="text-end fw-semibold">Suma de productos</td>
+                    <td class="text-end fw-semibold text-nowrap"
+                        th:text="'$' + ${#numbers.formatDecimal(sumaDetalles, 1, 'POINT', 0, 'COMMA')}">$0</td>
+                    <td></td>
+                </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+
+    <!-- Si la suma de productos no coincide con el total, se ofrece igualarlos -->
+    <div th:if="${!#lists.isEmpty(detalles) and sumaDetalles.compareTo(factura.total) != 0}"
+         class="alert alert-warning d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <span>La suma de los productos no coincide con el total de la factura.</span>
+        <form method="post" th:action="@{/facturas/{id}/usar-suma(id=${factura.id})}">
+            <button type="submit" class="btn btn-sm btn-warning">Usar la suma como total</button>
+        </form>
+    </div>
+
+    <!-- Agregar un producto al detalle -->
+    <div class="card card-mw mb-4">
+        <div class="card-body p-4">
+            <h2 class="h5 mb-3">Agregar producto</h2>
+            <p th:if="${#lists.isEmpty(productos)}" class="text-muted">
+                Primero crea productos en <a th:href="@{/productos/nuevo}">Productos</a>.
+            </p>
+            <form th:unless="${#lists.isEmpty(productos)}" th:action="@{/facturas/{id}/detalle(id=${factura.id})}"
+                  th:object="${detalle}" method="post" novalidate class="row g-3 align-items-start">
+                <div class="col-md-5">
+                    <label for="idProducto" class="form-label">Producto</label>
+                    <select id="idProducto" class="form-select" th:field="*{idProducto}" th:errorclass="is-invalid">
+                        <option value="">Selecciona...</option>
+                        <option th:each="p : ${productos}" th:value="${p.id}"
+                                th:text="${p.nombre} + ' (' + ${p.categoriaNombre} + ')'">Producto</option>
+                    </select>
+                    <div class="invalid-feedback" th:errors="*{idProducto}">Error</div>
+                </div>
+                <div class="col-6 col-md-2">
+                    <label for="cantidad" class="form-label">Cantidad</label>
+                    <input type="number" id="cantidad" class="form-control" th:field="*{cantidad}"
+                           th:errorclass="is-invalid" min="0" step="any">
+                    <div class="invalid-feedback" th:errors="*{cantidad}">Error</div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <label for="precioUnitario" class="form-label">Precio unitario</label>
+                    <input type="number" id="precioUnitario" class="form-control" th:field="*{precioUnitario}"
+                           th:errorclass="is-invalid" min="0" step="any">
+                    <div class="invalid-feedback" th:errors="*{precioUnitario}">Error</div>
+                </div>
+                <div class="col-md-2 d-grid">
+                    <label class="form-label d-none d-md-block">&nbsp;</label>
+                    <button type="submit" class="btn btn-mw">Agregar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="d-flex gap-2">
+        <a class="btn btn-outline-secondary" th:href="@{/facturas}">← Volver a facturas</a>
+        <a class="btn btn-outline-secondary" th:href="@{/facturas/{id}/editar(id=${factura.id})}">Editar datos</a>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

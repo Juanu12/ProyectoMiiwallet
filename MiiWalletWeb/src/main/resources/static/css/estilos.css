@@ -1,0 +1,51 @@
+/* Paleta MiiWallet: azul petroleo + verde menta, sobre Bootstrap 5 */
+:root {
+  --mw-azul: #12404f;
+  --mw-azul-claro: #1d5e72;
+  --mw-menta: #2fb589;
+  --mw-menta-oscuro: #23946f;
+  --mw-fondo: #f4f7f8;
+  --mw-gris: #e3eaed;
+  --bs-body-bg: var(--mw-fondo);
+  --bs-link-color: var(--mw-azul-claro);
+  --bs-link-hover-color: var(--mw-azul);
+}
+
+body { background: var(--mw-fondo); }
+
+.navbar-mw { background: var(--mw-azul); }
+.navbar-mw .navbar-brand { color: #fff; font-weight: 700; letter-spacing: .3px; }
+.navbar-mw .navbar-brand span { color: var(--mw-menta); }
+.navbar-mw .nav-link.active { color: #fff; font-weight: 600; }
+
+.btn-mw {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: var(--mw-menta);
+  --bs-btn-border-color: var(--mw-menta);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: var(--mw-menta-oscuro);
+  --bs-btn-hover-border-color: var(--mw-menta-oscuro);
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: var(--mw-menta-oscuro);
+  --bs-btn-active-border-color: var(--mw-menta-oscuro);
+}
+
+/* Paginas de login y registro */
+.auth .marca { font-size: 2rem; font-weight: 700; color: var(--mw-azul); letter-spacing: .3px; }
+.auth .marca span { color: var(--mw-menta); }
+
+.card-mw { border: 0; box-shadow: 0 2px 10px rgba(18, 64, 79, .10); border-radius: 14px; }
+.table thead th { background: var(--mw-gris); color: var(--mw-azul); border: 0; font-weight: 600; }
+.badge-mw { background: var(--mw-gris); color: var(--mw-azul); font-weight: 500; }
+
+/* Tarjetas de cifras del panel */
+.cifra .etiqueta { font-size: .8rem; text-transform: uppercase; letter-spacing: .5px; color: #6c7a80; }
+.cifra .valor { font-size: 1.5rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.positivo { color: var(--mw-menta-oscuro); }
+.negativo { color: #c0392b; }
+.text-end, .valor { font-variant-numeric: tabular-nums; }
+
+.form-control:focus, .form-select:focus {
+  border-color: var(--mw-menta);
+  box-shadow: 0 0 0 .2rem rgba(47, 181, 137, .25);
+}

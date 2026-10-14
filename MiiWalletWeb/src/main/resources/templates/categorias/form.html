@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${titulo})}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar('categorias')}"></nav>
+
+<main class="container pb-5" style="max-width: 720px;">
+    <h1 class="h3 mb-3" th:text="${titulo}">Nueva categoría</h1>
+
+    <div class="card card-mw">
+        <div class="card-body p-4">
+            <form th:action="@{/categorias/guardar}" th:object="${categoria}" method="post" novalidate>
+                <!-- Si tiene id, se esta editando; si no, se esta creando -->
+                <input type="hidden" th:field="*{id}">
+
+                <div class="mb-3">
+                    <label for="nombre" class="form-label">Nombre</label>
+                    <input type="text" id="nombre" class="form-control" th:field="*{nombre}"
+                           th:errorclass="is-invalid" maxlength="60">
+                    <div class="invalid-feedback" th:errors="*{nombre}">Error</div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="ambito" class="form-label">Ámbito</label>
+                    <select id="ambito" class="form-select" th:field="*{ambito}" th:errorclass="is-invalid">
+                        <option th:each="a : ${ambitos}" th:value="${a}" th:text="${a}">gasto</option>
+                    </select>
+                    <div class="invalid-feedback" th:errors="*{ambito}">Error</div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-mw">Guardar</button>
+                    <a class="btn btn-outline-secondary" th:href="@{/categorias}">Cancelar</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

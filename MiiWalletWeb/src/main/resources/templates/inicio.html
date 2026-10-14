@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('Inicio')}"></head>
+<body>
+<nav th:replace="~{fragments/layout :: navbar('inicio')}"></nav>
+
+<main class="container pb-5">
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+        <h1 class="h3 mb-0">Resumen del mes</h1>
+        <!-- Selector de mes: envia ?periodo=AAAA-MM -->
+        <form class="d-flex gap-2" method="get" th:action="@{/}">
+            <input type="month" name="periodo" class="form-control" th:value="${periodo}" aria-label="Mes">
+            <button type="submit" class="btn btn-outline-secondary">Ver</button>
+        </form>
+    </div>
+
+    <!-- Cifras principales -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-lg-3">
+            <div class="card card-mw cifra h-100"><div class="card-body">
+                <div class="etiqueta">Ingresos</div>
+                <div class="valor positivo"
+                     th:text="'$' + ${#numbers.formatDecimal(resumen.totalIngresos, 1, 'POINT', 0, 'COMMA')}">$0</div>
+            </div></div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card card-mw cifra h-100"><div class="card-body">
+                <div class="etiqueta">Gastos</div>
+                <div class="valor negativo"
+                     th:text="'$' + ${#numbers.formatDecimal(resumen.totalGastos, 1, 'POINT', 0, 'COMMA')}">$0</div>
+            </div></div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card card-mw cifra h-100"><div class="card-body">
+                <div class="etiqueta">Balance</div>
+                <div class="valor" th:classappend="${resumen.balance.signum() >= 0} ? 'positivo' : 'negativo'"
+                     th:text="'$' + ${#numbers.formatDecimal(resumen.balance, 1, 'POINT', 0, 'COMMA')}">$0</div>
+            </div></div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="card card-mw cifra h-100"><div class="card-body">
+                <div class="etiqueta">Riesgo (gasto / ingreso)</div>
+                <div class="valor" th:if="${resumen.porcentajeGasto != null}">
+                    <span th:text="${resumen.porcentajeGasto} + '%'">0%</span>
+                    <span th:if="${nivel != null}" class="badge fs-6 align-middle"
+                          th:classappend="${nivel.nombre == 'Alto'} ? 'text-bg-danger' : (${nivel.nombre == 'Medio'} ? 'text-bg-warning' : 'text-bg-success')"
+                          th:text="${nivel.nombre}">Bajo</span>
+                </div>
+                <div class="text-muted small mt-2" th:if="${resumen.porcentajeGasto == null}">Sin ingresos este mes</div>
+            </div></div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Gasto por categoria vs presupuesto -->
+        <div class="col-lg-7">
+            <div class="card card-mw h-100">
+                <div class="card-body">
+                    <h2 class="h5">Gasto por categoría</h2>
+                    <p class="small text-muted mb-3">Si la categoría tiene presupuesto ese mes, se muestra cuánto se ha usado.</p>
+                    <div th:each="g : ${gastosCategoria}" class="mb-3">
+                        <div class="d-flex justify-content-between">
+                            <span class="fw-semibold" th:text="${g.categoria}">Categoría</span>
+                            <span class="text-nowrap">
+                                <span th:text="'$' + ${#numbers.formatDecimal(g.total, 1, 'POINT', 0, 'COMMA')}">$0</span>
+                                <span class="text-muted small" th:if="${g.limite != null}"
+                                      th:text="' de $' + ${#numbers.formatDecimal(g.limite, 1, 'POINT', 0, 'COMMA')}"> de $0</span>
+                            </span>
+                        </div>
+                        <div class="progress mt-1" style="height: 8px;" th:if="${g.porcentajeUsado != null}"
+                             role="progressbar" th:aria-valuenow="${g.porcentajeUsado}" aria-valuemin="0" aria-valuemax="100">
+                            <div class="progress-bar"
+                                 th:classappend="${g.porcentajeUsado >= 100} ? 'bg-danger' : (${g.porcentajeUsado >= 90} ? 'bg-warning' : 'bg-success')"
+                                 th:style="'width:' + ${g.porcentajeUsado > 100 ? 100 : g.porcentajeUsado} + '%'"></div>
+                        </div>
+                    </div>
+                    <p th:if="${#lists.isEmpty(gastosCategoria)}" class="text-muted mb-0">No hay facturas en este mes.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alertas -->
+        <div class="col-lg-5">
+            <div class="card card-mw h-100">
+                <div class="card-body">
+                    <h2 class="h5 mb-3">Alertas recientes</h2>
+                    <div th:each="a : ${alertas}" class="d-flex gap-2 align-items-start mb-2">
+                        <span class="badge" th:classappend="'text-bg-' + ${a.color}" th:text="${a.nivelSeveridad}">medio</span>
+                        <div>
+                            <div class="small" th:text="${a.mensaje}">Mensaje</div>
+                            <div class="small text-muted" th:text="${#temporals.format(a.fecha, 'dd/MM/yyyy')}">fecha</div>
+                        </div>
+                    </div>
+                    <p th:if="${#lists.isEmpty(alertas)}" class="text-muted mb-0">Sin alertas.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ultimas facturas -->
+        <div class="col-12">
+            <div class="card card-mw">
+                <div class="card-body pb-0 d-flex justify-content-between align-items-center">
+                    <h2 class="h5 mb-0">Últimas facturas</h2>
+                    <a class="btn btn-sm btn-mw" th:href="@{/facturas/nueva}">+ Registrar factura</a>
+                </div>
+                <div class="table-responsive mt-3">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead><tr><th>Fecha</th><th>Comercio</th><th>Categoría</th><th class="text-end">Total</th></tr></thead>
+                        <tbody>
+                        <tr th:each="f : ${ultimasFacturas}">
+                            <td class="text-nowrap" th:text="${#temporals.format(f.fecha, 'dd/MM/yyyy')}">fecha</td>
+                            <td><a th:href="@{/facturas/{id}(id=${f.id})}" th:text="${f.comercio}">Comercio</a></td>
+                            <td><span class="badge badge-mw" th:text="${f.categoriaNombre}">Cat</span></td>
+                            <td class="text-end text-nowrap"
+                                th:text="'$' + ${#numbers.formatDecimal(f.total, 1, 'POINT', 0, 'COMMA')}">$0</td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(ultimasFacturas)}">
+                            <td colspan="4" class="text-center text-muted py-4">Aún no hay facturas.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
