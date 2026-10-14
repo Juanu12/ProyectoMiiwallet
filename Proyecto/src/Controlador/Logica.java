@@ -14,7 +14,7 @@ import java.util.ArrayList;
  * (Usuario, Producto, ...) y se le piden a ConexionSqlite las operaciones
  * sobre la base de datos. Esta es la clase que llamaría la interfaz gráfica.
  *
- * @author CSU22
+ * @author Grupo 2
  */
 public class Logica {
 

@@ -28,7 +28,7 @@ public class ConexionSqlite {
 
     // Ruta del archivo de base de datos. Ajusta si el .db no está
     // en la carpeta raíz del proyecto.
-    private static final String URL = "jdbc:sqlite:gestion_financiera.db";
+    private static final String URL = "jdbc:sqlite:Proyecto/src/Db/gestion_financiera.db";
 
     /**
      * Abre una conexión nueva hacia gestion_financiera.db.
